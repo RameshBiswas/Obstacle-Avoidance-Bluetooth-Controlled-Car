@@ -1,0 +1,119 @@
+// Motor Driver Pins
+int ENA = 9;
+int IN1 = 8;
+int IN2 = 7;
+int ENB = 3;
+int IN3 = 5;
+int IN4 = 4;
+
+// Ultrasonic Sensor Pins
+int trigPin = 11;
+int echoPin = 12;
+
+char command;
+long duration;
+int distance;
+int safeDistance = 20; // in cm (adjust as needed)
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  stopCar();
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    command = Serial.read();
+    Serial.println(command);
+    
+    if (command == 'F') {
+      measureDistance();
+      if (distance > safeDistance) {
+        moveForward();
+      } else {
+        stopCar();
+        Serial.println("Obstacle Detected!");
+      }
+    }
+    else if (command == 'B') {
+      moveBackward();
+    }
+    else if (command == 'L') {
+      turnLeft();
+    }
+    else if (command == 'R') {
+      turnRight();
+    }
+    else if (command == 'S') {
+      stopCar();
+    }
+  }
+}
+
+// Ultrasonic Measurement
+void measureDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;
+}
+
+// Motor Functions
+void moveForward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 150);
+  analogWrite(ENB, 150);
+}
+
+void moveBackward() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, 150);
+  analogWrite(ENB, 150);
+}
+
+void turnLeft() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 150);
+  analogWrite(ENB, 150);
+}
+
+void turnRight() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, 150);
+  analogWrite(ENB, 150);
+}
+
+void stopCar() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 0);
+  analogWrite(ENB, 0);
+}
